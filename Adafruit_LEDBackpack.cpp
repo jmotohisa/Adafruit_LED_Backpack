@@ -31,6 +31,8 @@
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #endif
 
+boolean with_colon;
+
 static const uint8_t numbertable[] = {
 	0x3F, /* 0 */
 	0x06, /* 1 */
@@ -200,11 +202,12 @@ void Adafruit_LEDBackpack::blinkRate(uint8_t b) {
 Adafruit_LEDBackpack::Adafruit_LEDBackpack(void) {
 }
 
-void Adafruit_LEDBackpack::begin(uint8_t _addr = 0x70) {
+void Adafruit_LEDBackpack::begin(uint8_t _addr = 0x70, boolean colon = 1) {
   i2c_addr = _addr;
-
+  with_colon = colon;
+  
   Wire.begin();
-
+  
   Wire.beginTransmission(i2c_addr);
   Wire.write(0x21);  // turn on oscillator
   Wire.endTransmission();
@@ -649,7 +652,8 @@ void Adafruit_7segment::printFloat(double n, uint8_t fracDigits, uint8_t base)
       for(uint8_t i = 0; displayNumber || i <= fracDigits; ++i) {
         boolean displayDecimal = (fracDigits != 0 && i == fracDigits);
         writeDigitNum(displayPos--, displayNumber % base, displayDecimal);
-        if(displayPos == 2) writeDigitRaw(displayPos--, 0x00);
+		if(with_colon==1)
+		  if(displayPos == 2) writeDigitRaw(displayPos--, 0x00);
         displayNumber /= base;
       }
     }
@@ -667,6 +671,9 @@ void Adafruit_7segment::printFloat(double n, uint8_t fracDigits, uint8_t base)
 
 void Adafruit_7segment::printError(void) {
   for(uint8_t i = 0; i < SEVENSEG_DIGITS; ++i) {
-    writeDigitRaw(i, (i == 2 ? 0x00 : 0x40));
+	if(with_colon)
+	  writeDigitRaw(i, (i == 2 ? 0x00 : 0x40));
+	else
+	  writeDigitRaw(i, 0x40);
   }
 }
