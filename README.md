@@ -1,4 +1,7 @@
 # Adafruit-LED-Backpack-Library
+
+JM modifid to work with 4-digit 7-segment without colon
+
 <!-- START COMPATIBILITY TABLE -->
 
 ## Compatibility
