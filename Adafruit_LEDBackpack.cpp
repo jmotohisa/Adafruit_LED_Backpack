@@ -202,9 +202,9 @@ void Adafruit_LEDBackpack::blinkRate(uint8_t b) {
 Adafruit_LEDBackpack::Adafruit_LEDBackpack(void) {
 }
 
-void Adafruit_LEDBackpack::begin(uint8_t _addr = 0x70, boolean colon = 1) {
+void Adafruit_LEDBackpack::begin(uint8_t _addr = 0x70, int _colon = 1) {
   i2c_addr = _addr;
-  with_colon = colon;
+  with_colon = _colon;
   
   Wire.begin();
   
@@ -564,7 +564,7 @@ size_t Adafruit_7segment::write(uint8_t c) {
   }
 
   position++;
-  if (position == 2) position++;
+  if (with_colon==1 && position == 2) position++;
 
   return r;
 }
@@ -645,15 +645,14 @@ void Adafruit_7segment::printFloat(double n, uint8_t fracDigits, uint8_t base)
     printError();
   } else {
     // otherwise, display the number
-    int8_t displayPos = 4;
+    int8_t displayPos = 3 + with_colon;
     
     if (displayNumber)  //if displayNumber is not 0
     {
       for(uint8_t i = 0; displayNumber || i <= fracDigits; ++i) {
         boolean displayDecimal = (fracDigits != 0 && i == fracDigits);
         writeDigitNum(displayPos--, displayNumber % base, displayDecimal);
-		if(with_colon==1)
-		  if(displayPos == 2) writeDigitRaw(displayPos--, 0x00);
+		if(with_colon==1 && displayPos == 2) writeDigitRaw(displayPos--, 0x00);
         displayNumber /= base;
       }
     }
@@ -671,9 +670,6 @@ void Adafruit_7segment::printFloat(double n, uint8_t fracDigits, uint8_t base)
 
 void Adafruit_7segment::printError(void) {
   for(uint8_t i = 0; i < SEVENSEG_DIGITS; ++i) {
-	if(with_colon)
-	  writeDigitRaw(i, (i == 2 ? 0x00 : 0x40));
-	else
-	  writeDigitRaw(i, 0x40);
+	  writeDigitRaw(i, ((i == 2 && with_colon ==1)? 0x00 : 0x40));
   }
 }
